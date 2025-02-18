@@ -1,37 +1,36 @@
-class Raquete{
-    constructor(x){
+class Raquete {
+    constructor(x) {
         this.x = x;
         this.y = height / 2;
         this.w = 10;
         this.h = 60;
-        //this.vy = 0;
     }
+    update() {
 
-    update(){
-         //se a raquete é o jogador 
-        if(this.x <width / 2){
+        // se a raquete é o jogador
+        if (this.x < width / 2) {
             this.y = mouseY;
-        }else{
-            //se a bola esta em cima vai para cima
-            if(bola.y < this.y){
+        } else {
+            // se a bola está em cima vai pra cima
+            if (bola.y < this.y) {
                 this.y -= 5;
-            }else{
+            } else {
+                // se a bola está em baixo vai pra baixo
                 this.y += 5;
             }
         }
-        
-        // Mantém a raquete dentro da tela
-        if(this.y < 0){
+
+        //limitar dentro da tela
+        if (this.y < 0) {
             this.y = 0;
         }
-        if(this.y > height - this.h ){
-            this.y = height - this.h ;
+        if (this.y > height - this.h) {
+            this.y = height - this.h;
         }
-      }
-
-    desenha(){
+    }
+    desenha() {
         fill(color(255, 255, 255));
-        rect(this.x, this.y - this.h / 2, this.w, this.h);
+        rect(this.x, this.y, this.w, this.h);
     }
 }
 
@@ -44,13 +43,15 @@ class Bola {
     reset() {
         this.x = width / 2;
         this.y = height / 2;
-        const velecidadeMaxima = 5;   
-        this.vx = Math.random() * 2 - 2.5;
-        this.vy = Math.random() * 2 - 2 - velecidadeMaxima;
+        const velecidadeMaxima = 5
+        this.vx = Math.random() * velecidadeMaxima * 2 - velecidadeMaxima;
+        this.vy = Math.random() * velecidadeMaxima * 2 - velecidadeMaxima;
     }
+
     update() {
         this.x += this.vx;
         this.y += this.vy;
+        
         if (this.x < this.r || this.x > width - this.r) {
             this.reset();
         }
@@ -58,21 +59,8 @@ class Bola {
             this.vy *= -1;
         }
 
-        // se colide com o computador
-        const colideNoXComputador = this.x + this.r > computador.x &&
-            this.x + this.r < computador.x + computador.w;
-
-        // se colisão com o jogador considerando o raio da bola
-        const colideNoXJogador = this.x - this.r > jogador.x &&
-            this.x - this.r < jogador.x + jogador.w;
-
-        // se colide no X
-        const colideNoX = colideNoXComputador || colideNoXJogador;
-
-        const colideNoY =
-            this.y + this.r >= jogador.y &&
-            this.y - this.r <= jogador.y + jogador.h;
-        if (colideNoX && colideNoY) {
+        if (colideRetanguloCirculo(this.x, this.y, this.r, jogador.x, jogador.y, jogador.w, jogador.h) ||
+            colideRetanguloCirculo(this.x, this.y, this.r, computador.x, computador.y, computador.w, computador.h)) {
             this.vx *= -1;
             this.vx *= 1.1;
             this.vy *= 1.1;
@@ -80,12 +68,25 @@ class Bola {
 
     }
 
-  
-
     desenha() {
         fill(color(255, 0, 0))
         ellipse(this.x, this.y, this.r * 2, this.r * 2);
     }
+}
+
+// verifica a colisão entre um círculo e retângulo
+// onde círculo é raio e cx, cy
+// e retângulo é x, y, w, h
+function colideRetanguloCirculo(cx, cy, raio, x, y, w, h) {
+    // se o círculo está a esquerda ou a direita do retângulo
+    if (cx + raio < x || cx - raio > x + w) {
+        return false;
+    }
+    // se o círculo está acima ou abaixo do retângulo
+    if (cy + raio < y || cy - raio > y + h) {
+        return false;
+    }
+    return true;
 }
 
 let bola;
@@ -96,7 +97,7 @@ function setup() {
     createCanvas(800, 400);
     bola = new Bola();
     jogador = new Raquete(30);
-    computador = new Raquete(width - 30 -10);
+    computador = new Raquete(width - 30 - 10);
 }
 
 function draw() {
